@@ -566,6 +566,7 @@ class K8sDriverLauncher {
         initScript += "mkdir -p '$launchDir'; if [ -d '$launchDir' ]; then cd '$launchDir'; else echo 'Cannot create directory: $launchDir'; exit 1; fi; "
         initScript += '[ -f /etc/nextflow/scm ] && ln -s /etc/nextflow/scm $NXF_HOME/scm; '
         initScript += '[ -f /etc/nextflow/nextflow.config ] && cp /etc/nextflow/nextflow.config $PWD/nextflow.config; '
+        initScript += '[ -f /mnt/nextflow-cfg.sh ] && /mnt/nextflow-cfg.sh $PWD/nextflow.config; '
         configMap['init.sh'] = initScript
 
         // nextflow config file
