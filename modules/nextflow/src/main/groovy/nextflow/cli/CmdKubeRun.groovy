@@ -53,6 +53,8 @@ class CmdKubeRun extends CmdRun {
     @Parameter(names = '-head-memory', description = 'Specify amount of memory requested for the Nextflow pod')
     String headMemory
 
+    @Parameter(names = '-head-pre-script', description = 'Specify amount of memory requested for the Nextflow pod')
+    String headPreScript
 
     @Override
     String getName() { 'kuberun' }
@@ -78,7 +80,7 @@ class CmdKubeRun extends CmdRun {
         if( hasAnsiLogFlag() )
             log.warn "Ansi logging not supported by kuberun command"
         checkRunName()
-        final driver = new K8sDriverLauncher(cmd: this, runName: runName, podImage: podImage, background: background(), headCpus: headCpus, headMemory: headMemory)
+        final driver = new K8sDriverLauncher(cmd: this, runName: runName, podImage: podImage, background: background(), headCpus: headCpus, headMemory: headMemory, headPreScript: headPreScript)
         driver.run(pipeline, scriptArgs)
         final status = driver.shutdown()
         System.exit(status)
