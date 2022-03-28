@@ -284,17 +284,18 @@ task dockerPack(type: Exec, dependsOn: ['pack']) {
     dockerBase.mkdirs()
     def dockerFile = new File("$buildDir/docker/Dockerfile")
     dockerFile.text = """
-    FROM openjdk:8-jre-alpine
+    FROM openjdk:17-jdk-alpine
     RUN apk update && apk add bash && apk add coreutils && apk add curl
     COPY .nextflow /.nextflow
     COPY nextflow /usr/local/bin/nextflow
     COPY entry.sh /usr/local/bin/entry.sh
     COPY dist/docker /usr/local/bin/docker
     ENV NXF_HOME=/.nextflow
-    ENV NXF_OPTS='-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap'
+    ENV NXF_OPTS='-XX:+UnlockExperimentalVMOptions'
     RUN touch /.nextflow/dockerized && rm -rf /.nextflow/launch-classpath
     RUN chmod +x /usr/local/bin/nextflow /usr/local/bin/entry.sh
     RUN nextflow info
+    RUN chown -R 1000:1000 /.nextflow
     ENTRYPOINT ["/usr/local/bin/entry.sh"]
     """
 
@@ -308,8 +309,8 @@ task dockerPack(type: Exec, dependsOn: ['pack']) {
     cd $buildDir/docker  
     mkdir -p dist
     curl -fsSLO https://get.docker.com/builds/Linux/x86_64/docker-17.03.1-ce.tgz && tar --strip-components=1 -xvzf docker-17.03.1-ce.tgz -C dist
-    NXF_HOME=\$PWD/.nextflow nextflow info
-    docker build -t nextflow/nextflow:$version .
+    NXF_HOME=\$PWD/.nextflow ./nextflow info
+    docker build -t cerit.io/nextflow:$version .
     """.stripIndent()
 
     commandLine 'bash', '-e', temp.absolutePath
