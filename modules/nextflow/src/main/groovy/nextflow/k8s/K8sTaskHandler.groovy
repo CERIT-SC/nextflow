@@ -61,7 +61,7 @@ class K8sTaskHandler extends TaskHandler {
 
     } ()
 
-    private String deploymentName = "pod"
+    private String resourceType = "pod"
 
     private K8sClient client
 
@@ -161,7 +161,7 @@ class K8sTaskHandler extends TaskHandler {
             newSubmitRequest0(task, imageName)
         }
         catch( Throwable e ) {
-            throw  new ProcessSubmitException("Failed to submit K8s $this.deploymentName -- Cause: ${e.message ?: e}", e)
+            throw  new ProcessSubmitException("Failed to submit K8s $this.resourceType -- Cause: ${e.message ?: e}", e)
         }
     }
 
@@ -187,7 +187,7 @@ class K8sTaskHandler extends TaskHandler {
                     .withPodOptions(getPodOptions())
 
         if ( k8sConfig.getJob() ) {
-            this.deploymentName = "job"
+            this.resourceType = "job"
 
             podBuilder = podBuilder.withContainerName(getSyntheticPodName(task))
 
@@ -277,7 +277,7 @@ class K8sTaskHandler extends TaskHandler {
             resp = client.podCreate(req, yamlDebugPath())
 
         if( !resp.metadata?.name )
-            throw new K8sResponseException("Missing created $this.deploymentName name", resp)
+            throw new K8sResponseException("Missing created $this.resourceType name", resp)
         this.podName = resp.metadata.name
         this.status = TaskStatus.SUBMITTED
     }
@@ -301,7 +301,7 @@ class K8sTaskHandler extends TaskHandler {
             else
                 newState = client.podState(podName)
             if( newState ) {
-                log.trace "[K8s] Get $this.deploymentName=$podName state=$newState"
+                log.trace "[K8s] Get $this.resourceType=$podName state=$newState"
                 state = newState
                 timestamp = now
             }
@@ -311,7 +311,7 @@ class K8sTaskHandler extends TaskHandler {
 
     @Override
     boolean checkIfRunning() {
-        if( !podName ) throw new IllegalStateException("Missing K8s $this.deploymentName name -- cannot check if running")
+        if( !podName ) throw new IllegalStateException("Missing K8s $this.resourceType name -- cannot check if running")
         if(isSubmitted()) {
             def state = getState()
             // include `terminated` state to allow the handler status to progress
@@ -355,7 +355,7 @@ class K8sTaskHandler extends TaskHandler {
 
     @Override
     boolean checkIfCompleted() {
-        if( !podName ) throw new IllegalStateException("Missing K8s $this.deploymentName name - cannot check if complete")
+        if( !podName ) throw new IllegalStateException("Missing K8s $this.resourceType name - cannot check if complete")
         def state = getState()
         if( state && state.terminated ) {
             // finalize the task
@@ -392,7 +392,7 @@ class K8sTaskHandler extends TaskHandler {
             Files.copy(stream, task.workDir.resolve(TaskRun.CMD_LOG))
         }
         catch( Exception e ) {
-            log.warn "Failed to copy log for $this.deploymentName $podName", e
+            log.warn "Failed to copy log for $this.resourceType $podName", e
         }
     }
 
@@ -415,7 +415,7 @@ class K8sTaskHandler extends TaskHandler {
             return
         
         if( podName ) {
-            log.trace "[K8s] deleting $this.deploymentName name=$podName"
+            log.trace "[K8s] deleting $this.resourceType name=$podName"
             if ( k8sConfig.getJob() )
                 client.jobDelete(podName)
             else
@@ -449,7 +449,7 @@ class K8sTaskHandler extends TaskHandler {
                 client.podDelete(podName)
         }
         catch( Exception e ) {
-            log.warn "Unable to cleanup $this.deploymentName: $podName -- see the log file for details", e
+            log.warn "Unable to cleanup $this.resourceType: $podName -- see the log file for details", e
         }
     }
 
