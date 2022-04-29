@@ -168,8 +168,10 @@ class K8sTaskHandlerTest extends Specification {
         def builder = Mock(K8sWrapperBuilder)
         def handler = Spy(K8sTaskHandler)
         def config = Mock(ClientConfig)
+        def executor = Mock(K8sExecutor)
         handler.builder = builder
         handler.client = client
+        handler.executor = executor
         Map result
 
         when:
@@ -179,13 +181,14 @@ class K8sTaskHandlerTest extends Specification {
         1 * handler.getPodOptions() >> new PodOptions()
         1 * handler.getLabels(task) >> [:]
         1 * handler.getAnnotations() >> [:]
-        1 * handler.getContainerMounts() >> []
+        1 * handler.getContainerMounts() >> []        
         1 * task.getContainer() >> 'debian:latest'
         1 * task.getWorkDir() >> WORK_DIR
         1 * task.getConfig() >> new TaskConfig()
         1 * client.getConfig() >> config
         1 * config.getNamespace() >> 'just-a-namespace'
         1 * config.getServiceAccount() >> 'pedantic-kallisto'
+        2 * executor.getK8sConfig() >> [:]
 
         result == [ apiVersion: 'v1',
                     kind: 'Pod',
