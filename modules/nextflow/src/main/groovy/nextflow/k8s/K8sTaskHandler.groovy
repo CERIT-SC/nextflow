@@ -102,7 +102,7 @@ class K8sTaskHandler extends TaskHandler {
         executor.session.runName
     }
 
-    protected String getJobName() {
+    protected String getPodName() {
         return podName
     }
 

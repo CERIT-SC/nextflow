@@ -401,6 +401,7 @@ class K8sTaskHandlerTest extends Specification {
         1 * handler.yamlDebugPath() >> YAML
         1 * handler.newSubmitRequest(task) >> REQUEST
         1 * client.podCreate(REQUEST,YAML) >> RESPONSE
+        1 * executor.getK8sConfig() >> [:]
         handler.podName == POD_NAME
         handler.status == TaskStatus.SUBMITTED
 
@@ -412,7 +413,7 @@ class K8sTaskHandlerTest extends Specification {
         1 * handler.yamlDebugPath() >> YAML
         1 * handler.newSubmitRequest(task) >> REQUEST
         1 * client.podCreate(REQUEST,YAML) >> new K8sResponseJson([missing: 'meta'])
-        2 * executor.getK8sConfig() >> [:]
+        1 * executor.getK8sConfig() >> [:]
         then:
         thrown(K8sResponseException)
     }
