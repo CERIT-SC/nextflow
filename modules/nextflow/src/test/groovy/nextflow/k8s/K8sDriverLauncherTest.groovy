@@ -56,9 +56,9 @@ class K8sDriverLauncherTest extends Specification {
         1 * driver.makeK8sClient(K8S_CONFIG) >> K8S_CLIENT
         1 * K8S_CONFIG.checkStorageAndPaths(K8S_CLIENT)
         1 * driver.createK8sConfigMap() >> null
-        1 * driver.createK8sLauncherPod() >> null
-        1 * driver.waitPodStart() >> null
-        1 * driver.printK8sPodOutput() >> null
+        1 * driver.createK8sLauncherJob() >> null
+        1 * driver.waitJobStart() >> null
+        1 * driver.printK8sJobOutput() >> null
 
         driver.pipelineName == NAME
         driver.interactive == false
@@ -445,16 +445,18 @@ class K8sDriverLauncherTest extends Specification {
         def driver = Spy(K8sDriverLauncher)
         driver.k8sClient = client
         driver.runName = POD_NAME
+        driver.k8sConfig = Mock(K8sConfig)
 
         when:
-        def status = driver.waitPodTermination()
+        def status = driver.waitJobTermination()
         then:
         1 * client.podState(POD_NAME) >> [terminated: [exitCode: 99]]
+        1 * driver.k8sConfig.getJob() >> [:]
         then:
         status == 99
 
         when:
-        status = driver.waitPodTermination()
+        status = driver.waitJobTermination()
         then:
         1 * client.podState(POD_NAME) >> [:]
         then:
@@ -463,7 +465,7 @@ class K8sDriverLauncherTest extends Specification {
         status == 99
 
         when:
-        status = driver.waitPodTermination()
+        status = driver.waitJobTermination()
         then:
         1 * client.podState(POD_NAME) >> [:]
         1 * driver.isWaitTimedOut(_) >> true
@@ -483,7 +485,7 @@ class K8sDriverLauncherTest extends Specification {
         when:
         driver.shutdown()
         then:
-        1 * driver.waitPodTermination() >> 0
+        1 * driver.waitJobTermination() >> 0
         then:
         1 * config.getCleanup(true) >> true
         1 * driver.deleteConfigMap() >> null
@@ -491,7 +493,7 @@ class K8sDriverLauncherTest extends Specification {
         when:
         driver.shutdown()
         then:
-        1 * driver.waitPodTermination() >> 1
+        1 * driver.waitJobTermination() >> 1
         then:
         1 * config.getCleanup(false) >> true
         1 * driver.deleteConfigMap() >> null
@@ -499,7 +501,7 @@ class K8sDriverLauncherTest extends Specification {
         when:
         driver.shutdown()
         then:
-        1 * driver.waitPodTermination() >> 1
+        1 * driver.waitJobTermination() >> 1
         then:
         1 * config.getCleanup(false) >> false
         0 * driver.deleteConfigMap() >> null
