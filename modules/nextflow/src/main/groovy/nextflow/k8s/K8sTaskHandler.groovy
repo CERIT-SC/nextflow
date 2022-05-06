@@ -30,6 +30,7 @@ import nextflow.exception.ProcessSubmitException
 import nextflow.executor.BashWrapperBuilder
 import nextflow.k8s.client.K8sClient
 import nextflow.k8s.client.K8sResponseException
+import nextflow.exception.NodeTerminationException
 import nextflow.k8s.model.PodEnv
 import nextflow.k8s.model.PodOptions
 import nextflow.k8s.model.PodSpecBuilder
@@ -293,20 +294,33 @@ class K8sTaskHandler extends TaskHandler {
      */
     protected Map getState() {
         final now = System.currentTimeMillis()
-        final delta =  now - timestamp;
-        if( !state || delta >= 1_000) {
-            def newState
-            if ( k8sConfig.getJob() )
-                newState = client.jobState(podName)
-            else
-                newState = client.podState(podName)
-            if( newState ) {
-                log.trace "[K8s] Get $this.resourceType=$podName state=$newState"
-                state = newState
-                timestamp = now
+        try {
+            final delta =  now - timestamp;
+            if( !state || delta >= 1_000) {
+                def newState
+                if ( k8sConfig.getJob() )
+                    newState = client.jobState(podName)
+                else
+                    newState = client.podState(podName)
+                if( newState ) {
+                   log.trace "[K8s] Get $this.resourceType=$podName state=$newState"
+                   state = newState
+                   timestamp = now
+                }
             }
-        }
-        return state
+            return state
+        } 
+        catch (NodeTerminationException e) {
+            // create a synthetic `state` object adding an extra `nodeTermination`
+            // attribute to return the NodeTerminationException error to the caller method
+            final instant = Instant.now()
+            final result = new HashMap(10)
+            result.terminated = [startedAt:instant.toString(), finishedAt:instant.toString()]
+            result.nodeTermination = e
+            timestamp = now
+            state = result
+            return state
+        } 
     }
 
     @Override

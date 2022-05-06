@@ -499,9 +499,8 @@ class K8sTaskHandlerTest extends Specification {
         1 * handler.getState() >> fullState
         1 * handler.updateTimestamps(termState)
         1 * handler.readExitFile() >> EXIT_STATUS
-        1 * handler.deletePodIfSuccessful(task) >> null
-        1 * handler.savePodLogOnError(task) >> null
-        1 * executor.getK8sConfig() >> [:]
+        1 * handler.deleteJobIfSuccessful(task) >> null
+        1 * handler.saveJobLogOnError(task) >> null
         handler.task.exitStatus == EXIT_STATUS
         handler.task.@stdout == OUT_FILE
         handler.task.@stderr == ERR_FILE
@@ -716,19 +715,19 @@ class K8sTaskHandlerTest extends Specification {
         def TASK_FAIL = Mock(TaskRun); TASK_FAIL.isSuccess() >> false
 
         when:
-        handler.deletePodIfSuccessful(TASK_OK)
+        handler.deleteJobIfSuccessful(TASK_OK)
         then:
-        1 * executor.getK8sConfig() >> new K8sConfig()
+        2 * executor.getK8sConfig() >> new K8sConfig()
         1 * client.podDelete(POD_NAME) >> null
 
         when:
-        handler.deletePodIfSuccessful(TASK_OK)
+        handler.deleteJobIfSuccessful(TASK_OK)
         then:
-        1 * executor.getK8sConfig() >> new K8sConfig(cleanup: true)
+        2 * executor.getK8sConfig() >> new K8sConfig(cleanup: true)
         1 * client.podDelete(POD_NAME) >> null
 
         when:
-        handler.deletePodIfSuccessful(TASK_FAIL)
+        handler.deleteJobIfSuccessful(TASK_FAIL)
         then:
         1 * executor.getK8sConfig() >> new K8sConfig(cleanup: false)
         0 * client.podDelete(POD_NAME) >> null
@@ -754,13 +753,13 @@ class K8sTaskHandlerTest extends Specification {
         handler.podName = POD_NAME
 
         when:
-        handler.savePodLogOnError(task)
+        handler.saveJobLogOnError(task)
         then:
         task.isSuccess() >> true
         0 * client.podLog(_)
 
         when:
-        handler.savePodLogOnError(task)
+        handler.saveJobLogOnError(task)
         then:
         task.isSuccess() >> false
         task.getWorkDir() >> folder
@@ -769,6 +768,7 @@ class K8sTaskHandlerTest extends Specification {
         session.isCancelled() >> false
         session.isAborted() >> false
         1 * client.podLog(POD_NAME) >> POD_LOG
+        1 * executor.getK8sConfig() >> [:]
 
         folder.resolve( TaskRun.CMD_LOG ).text == POD_MESSAGE
         cleanup:
