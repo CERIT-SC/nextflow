@@ -159,6 +159,7 @@ class K8sTaskHandlerTest extends Specification {
 
     }
 
+    // fixed
     def 'should create a pod with specified client configs' () {
 
         given:
@@ -209,6 +210,7 @@ class K8sTaskHandlerTest extends Specification {
 
     }
 
+    //fixed
     def 'should create a pod with specified pod options' () {
 
         given:
@@ -219,8 +221,10 @@ class K8sTaskHandlerTest extends Specification {
         def config = Mock(TaskConfig)
         def handler = Spy(K8sTaskHandler)
         def podOptions = Mock(PodOptions)
+        def executor = Mock(K8sExecutor)
         handler.builder = builder
         handler.client = client
+        handler.executor = executor
         podOptions.automountServiceAccountToken >> true
         Map result
 
@@ -239,6 +243,7 @@ class K8sTaskHandlerTest extends Specification {
         2 * podOptions.getEnvVars() >> [ PodEnv.value('FOO','bar') ]
         2 * podOptions.getMountSecrets() >> [ new PodMountSecret('my-secret/key-z', '/data/secret.txt') ]
         2 * podOptions.getMountConfigMaps() >> [ new PodMountConfig('my-data/key-x', '/etc/file.txt') ]
+        2 * executor.getK8sConfig() >> [:]
 
         result == [
             apiVersion: 'v1',
@@ -277,8 +282,10 @@ class K8sTaskHandlerTest extends Specification {
         def client = Mock(K8sClient)
         def builder = Mock(K8sWrapperBuilder)
         def handler = Spy(K8sTaskHandler)
+        def executor = Mock(K8sExecutor)
         handler.builder = builder
         handler.client = client
+        handler.executor = executor
         Map result
 
         def podOptions = Mock(PodOptions)
@@ -300,6 +307,7 @@ class K8sTaskHandlerTest extends Specification {
         1 * config.getMemory() >> null
         1 * client.getConfig() >> new ClientConfig()
         2 * podOptions.getVolumeClaims() >> CLAIMS
+        2 * executor.getK8sConfig() >> [:]
 
         result == [
             apiVersion: 'v1',
@@ -376,8 +384,10 @@ class K8sTaskHandlerTest extends Specification {
         def client = Mock(K8sClient)
         def builder = Mock(K8sWrapperBuilder)
         def handler = Spy(K8sTaskHandler)
+        def executor = Mock(K8sExecutor)
         handler.client = client
         handler.task = task
+        handler.executor = executor
 
         def POD_NAME = 'new-pod-id'
         def REQUEST =  [foo: 'bar']
@@ -402,6 +412,7 @@ class K8sTaskHandlerTest extends Specification {
         1 * handler.yamlDebugPath() >> YAML
         1 * handler.newSubmitRequest(task) >> REQUEST
         1 * client.podCreate(REQUEST,YAML) >> new K8sResponseJson([missing: 'meta'])
+        2 * executor.getK8sConfig() >> [:]
         then:
         thrown(K8sResponseException)
     }
