@@ -185,7 +185,7 @@ The following settings are available:
 `aws.batch.logsGroup`
 : :::{versionadded} 22.09.0-edge
   :::
-: The name of the logs group used by Batch Jobs (default: `/aws/batch`).
+: The name of the logs group used by Batch Jobs (default: `/aws/batch/job`).
 
 `aws.batch.maxParallelTransfers`
 : Max parallel upload/download transfer operations *per job* (default: `4`).
@@ -1990,6 +1990,11 @@ The following environment variables control the configuration of the Nextflow ru
 : :::{versionadded} 23.04.0
   :::
 : Defines a custom plugin registry or plugin release URL for testing plugins outside of the main registry. See {ref}`testing-plugins` for more information.
+
+`NXF_PUBLISH_FAIL_ON_ERROR`
+: :::{versionadded} 24.04.3
+  :::
+: Defines the default behavior of `publishDir.failOnError` setting. See {ref}`publishDir<process-publishdir>` directive for more information.
 
 `NXF_SCM_FILE`
 : :::{versionadded} 20.10.0
