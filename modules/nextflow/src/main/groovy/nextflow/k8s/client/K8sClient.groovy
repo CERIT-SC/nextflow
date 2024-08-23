@@ -629,7 +629,7 @@ class K8sClient {
             try {
                 return makeRequestCall( method, path, body )
             } catch ( K8sResponseException | SocketException | SocketTimeoutException e ) {
-                if ( e instanceof K8sResponseException && e.response.code != 500 )
+                if ( e instanceof K8sResponseException && e.response.code != 500 && e.response.code != 503 )
                     throw e
                 if ( ++attempt > maxRetries )
                     throw e

@@ -544,6 +544,7 @@ class K8sDriverLauncher {
             .withEnv( PodEnv.value('NXF_ASSETS', k8sConfig.getProjectDir()) )
             .withEnv( PodEnv.value('NXF_EXECUTOR', 'k8s'))
             .withEnv( PodEnv.value('NXF_ANSI_LOG', 'false'))
+            .withEnv( PodEnv.value('NXF_ENABLE_FS_SYNC', 'true'))
             .withMemory(headMemory?:"")
             .withCpus(headCpus)
 

@@ -1,5 +1,5 @@
 FROM amazoncorretto:17.0.10-al2023
-RUN yum install -y procps-ng shadow-utils which
+RUN yum install -y procps-ng shadow-utils which vim 
 
 ENV NXF_HOME=/.nextflow
 ARG TARGETPLATFORM=linux/amd64
@@ -14,6 +14,8 @@ RUN mkdir /.nextflow \
  && chmod 755 /usr/local/bin/nextflow \
  && chmod 755 /usr/local/bin/entry.sh \
  && nextflow info
+
+RUN chown -R 1000:1000 /.nextflow
 
 # define the entry point
 ENTRYPOINT ["/usr/local/bin/entry.sh"]

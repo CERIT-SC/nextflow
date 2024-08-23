@@ -435,10 +435,14 @@ class PodSpecBuilder {
         if( privileged ) {
             // note: privileged flag needs to be defined in the *container* securityContext
             // not the 'spec' securityContext (see below)
-            secContext.privileged =true
+            secContext.privileged = true
+        } else {
+            secContext.allowPrivilegeEscalation = false
         }
         if( capabilities ) {
             secContext.capabilities = capabilities
+        } else {
+ 	    secContext.capabilities = [ drop: [ 'ALL' ]]
         }
         if( secContext ) {
             container.securityContext = secContext
