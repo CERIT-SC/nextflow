@@ -36,12 +36,16 @@ class PodSecurityContext {
     private Map spec
 
     PodSecurityContext(def user) {
-        spec = [runAsUser: user]
+        spec = [runAsUser: user, seccompProfile: [ type: "RuntimeDefault"], runAsNonRoot : true]
     }
 
     PodSecurityContext(Map ctx) {
         assert ctx
         spec = ctx
+        if( ! spec.runAsNonRoot )
+          spec.runAsNonRoot = true
+        if( ! spec.seccompProfile )
+          spec.seccompProfile = [type: "RuntimeDefault"]
     }
 
     Map toSpec() { spec }

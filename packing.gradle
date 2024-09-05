@@ -298,6 +298,7 @@ task dockerPack(type: Exec, dependsOn: ['packOne']) {
     COPY entry.sh /usr/local/bin/entry.sh
     COPY dist/docker /usr/local/bin/docker
     ENV NXF_HOME=/.nextflow
+    ENV NXF_ENABLE_FS_SYNC=true
     RUN chmod +x /usr/local/bin/nextflow /usr/local/bin/entry.sh
     RUN nextflow info && chown -R 1000:1000 /.nextflow
     ENTRYPOINT ["/usr/local/bin/entry.sh"]
